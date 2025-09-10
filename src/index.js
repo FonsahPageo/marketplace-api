@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import pool from './config/db.js';
 import userRoutes from './routes/userRoutes.js';
 import errorHandling from './middlewares/errorHandling.js';
-import { createUserTable } from './data/createTables.js';
+import { createTables } from './data/createTables.js';
 
 dotenv.config();
 
@@ -22,7 +22,7 @@ app.use('/', userRoutes);
 app.use(errorHandling);
 
 // Create database with tables before starting server
-createUserTable();
+createTables();
 
 app.get('/', async (req, res) => {
     const currentDb = await pool.query('SELECT current_database()');
