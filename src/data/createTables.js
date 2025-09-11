@@ -7,11 +7,11 @@ export const createTables = async () => {
     const createUsersQuery = `
         CREATE TABLE IF NOT EXISTS users(
             id SERIAL PRIMARY KEY,
-            fname VARCHAR(100) NOT NULL,
-            lname VARCHAR(100) NOT NULL,
-            username VARCHAR(100) UNIQUE NOT NULL,
-            email VARCHAR(100) UNIQUE NOT NULL,
-            password VARCHAR(100) NOT NULL,
+            fname VARCHAR(50) NOT NULL,
+            lname VARCHAR(50) NOT NULL,
+            username VARCHAR(50) UNIQUE NOT NULL,
+            email VARCHAR(50) UNIQUE NOT NULL,
+            password VARCHAR(50) NOT NULL,
             created_at TIMESTAMP DEFAULT NOW()
         )
     `;
@@ -25,12 +25,26 @@ export const createTables = async () => {
             created_at TIMESTAMP DEFAULT NOW()
         )
     `;
+
+    const createProductsQuery = `
+        CREATE TABLE IF NOT EXISTS products(
+            id SERIAL PRIMARY KEY,
+            title VARCHAR(50) NOT NULL,
+            description TEXT,
+            price NUMERIC(10, 2) NOT NULL,
+            image VARCHAR(100) NOT NULL,
+            created_at TIMESTAMP DEFAULT NOW()
+        )
+    `;
     try {
         await pool.query(createUsersQuery);
         console.log('Users table created successfully');
 
         await pool.query(createRefreshTokensQuery);
         console.log('Refresh tokens table created successfully');
+
+        await pool.query(createProductsQuery);
+        console.log('Products table created successfully');
     } catch (error) {
         console.log('Error creating tables', error);
     }

@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import pool from './config/db.js';
 import userRoutes from './routes/userRoutes.js';
+import productRoutes from './routes/productRoutes.js';
 import errorHandling from './middlewares/errorHandling.js';
 import { createTables } from './data/createTables.js';
 
@@ -17,6 +18,7 @@ app.use(cors());
 
 // Routes
 app.use('/', userRoutes);
+app.use('/', productRoutes);
 
 // Error handling middleware
 app.use(errorHandling);
@@ -28,7 +30,6 @@ app.get('/', async (req, res) => {
     const currentDb = await pool.query('SELECT current_database()');
     res.send(`Connected to ${currentDb.rows[0].current_database} database succesffuly`);
 })
-
 
 app.listen(PORT, () => {
     console.log(`The server is running on http://localhost:${PORT}`);

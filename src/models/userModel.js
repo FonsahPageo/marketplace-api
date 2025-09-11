@@ -18,7 +18,7 @@ export const getAllUsersService = async () => {
 export const findUserByUsername = async (username) => {
     const result = await pool.query('SELECT id, fname, lname, username, email FROM users WHERE username = $1', [username]);
     return result.rows[0];
-}
+};
 
 export const saveRefreshToken = async (userId, token) => {
     const expiresAt = new Date();
