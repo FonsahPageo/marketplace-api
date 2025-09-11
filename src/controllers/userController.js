@@ -86,12 +86,12 @@ export const loginUser = async (req, res, next) => {
     try {
         const user = await findUserByUsername(username);
         if (!user) {
-            return handleResponse(res, 401, 'Invalid username or password');
+            return handleResponse(res, 401, 'Invalid Username');
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user.passwordHash);
         if (!isMatch) {
-            return handleResponse(res, 401, 'Invalid email or password');
+            return handleResponse(res, 401, 'Invalid password');
         }
 
         const accessToken = generateAccessToken(user);
@@ -99,14 +99,10 @@ export const loginUser = async (req, res, next) => {
 
         await saveRefreshToken(user.id, refreshToken);
 
+        const { passwordHash, ...userWithoutPassword } = user;
+
         handleResponse(res, 200, `Logged in as ${user.username}`, {
-            user: {
-                id: user.id,
-                fname: user.fname,
-                lname: user.lname,
-                username: user.username,
-                email: user.email
-            },
+            user: userWithoutPassword,
             accessToken,
             refreshToken,
         });

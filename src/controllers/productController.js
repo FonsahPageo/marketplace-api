@@ -1,7 +1,7 @@
 import {
     createProductService,
     getAllProductsService,
-    findProductByTitle,
+    findProductById,
     updateProductService,
     deleteProductService
 } from "../models/productModel.js";
@@ -16,8 +16,9 @@ const handleResponse = (res, status, message, data = null) => {
 
 export const createProduct = async (req, res, next) => {
     const { title, description, price, image } = req.body;
+    const userId = req.user.id;
     try {
-        const newProduct = await createProductService(title, description, price, image);
+        const newProduct = await createProductService(title, description, price, image, userId);
 
         handleResponse(res, 201, 'Product added successfully', {
             title: title,
@@ -33,7 +34,11 @@ export const createProduct = async (req, res, next) => {
 export const getAllProducts = async (req, res, next) => {
     try {
         const products = await getAllProductsService();
-        handleResponse(res, 202, 'Products fetched successfully', products);
+        if (!products || products.length === 0) {
+            handleResponse(res, 200, 'No product has been created. Create one now.', products);
+        } else {
+            handleResponse(res, 200, 'Products fetched successfully', products);
+        }
     } catch (err) {
         next(err);
     }
@@ -41,13 +46,13 @@ export const getAllProducts = async (req, res, next) => {
 
 export const findProduct = async (req, res, next) => {
     try {
-        const { title } = req.params;
-        const product = await findProductByTitle(title);
+        const { id } = req.params;
+        const product = await findProductById(id);
 
         if (!product) {
-            return handleResponse(res, 404, 'Product does not exist')
+            return handleResponse(res, 404, 'Product does not exist', product)
         }
-        handleResponse(res, 202, 'This is the product you are looking for', product);
+        handleResponse(res, 202, `Product ${id} found`, product);
     } catch (err) {
         next(err);
     }
@@ -56,14 +61,20 @@ export const findProduct = async (req, res, next) => {
 export const updateProduct = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { title, description, price, image } = req.body;
-        const product = await updateProductService(id, title, description, price, image);
+        const updates = req.body;
+        const userId = req.user.id;
 
-        if (!product) {
-            return handleResponse(res, 404, 'Product not found');
+        const existingProduct = await findProductById(id);
+        if (!existingProduct) {
+            handleResponse(res, 404, `Product ${req.body.title} does not exist`, existingProduct);
         }
 
-        handleResponse(res, 202, 'Product modified successfully', product);
+        if(existingProduct.user_id !== userId){
+            handleResponse(res, 403, 'You are not allowed to modify this product', existingProduct);
+        }
+
+        const updatedProduct = await updateProductService (id, updates, userId);
+        handleResponse(res, 200, 'Product modified successfully', updatedProduct);
     } catch (err) {
         next(err);
     }
@@ -72,13 +83,20 @@ export const updateProduct = async (req, res, next) => {
 export const deleteProduct = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const product = await deleteProductService(id);
+        // const updates = req.body;
+        const userId = req.user.id;
 
-        if(!product){
-            return handleResponse(res, 404, 'Product not found');
+        const existingProduct = await findProductById(id);
+        if (!existingProduct) {
+            handleResponse(res, 404, `Product does not exist`, existingProduct);
         }
 
-        handleResponse(res, 202, 'Product deleted successfully', product);
+        if(existingProduct.user_id !== userId){
+            handleResponse(res, 403, 'You are not allowed to delete this product', existingProduct);
+        }
+
+        const deletedProduct = await deleteProductService (id, userId);
+        handleResponse(res, 202, 'Product deleted successfully', deletedProduct);
     } catch (err) {
         next(err);
     }

@@ -5,19 +5,35 @@ export const createUserService = async (fname, lname, username, email, password)
     const saltRounds = 10;
     const hasdhedPaswword = await bcrypt.hash(password, saltRounds);
     const result = await pool.query(
-        'INSERT INTO users (fname, lname, username, email, password) VALUES ($1, $2, $3, $4, $5) RETURNING id, fname, lname, username, email ',
+        `INSERT INTO users (fname, lname, username, email, password) 
+        VALUES ($1, $2, $3, $4, $5) 
+        RETURNING id, fname, lname, username, email`,
         [fname, lname, username, email, hasdhedPaswword]);
     return result.rows[0];
 };
 
 export const getAllUsersService = async () => {
-    const result = await pool.query('SELECT id, fname, lname, username, email FROM users');
+    const result = await pool.query(
+        'SELECT id, fname, lname, username, email FROM users');
     return result.rows;
 };
 
 export const findUserByUsername = async (username) => {
-    const result = await pool.query('SELECT id, fname, lname, username, email FROM users WHERE username = $1', [username]);
-    return result.rows[0];
+    const result = await pool.query(
+        `SELECT id, fname, lname, username, email, password
+        FROM users WHERE username=$1`,
+        [username]);
+    if (!result.rows[0]) return null;
+
+    const user = result.rows[0];
+    return {
+        id: user.id,
+        fname: user.fname,
+        lname: user.lname,
+        username: user.username,
+        email: user.email,
+        passwordHash: user.password
+    };
 };
 
 export const saveRefreshToken = async (userId, token) => {

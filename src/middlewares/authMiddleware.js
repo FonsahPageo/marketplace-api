@@ -7,7 +7,8 @@ export const authMiddleware = (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        return res.status(403).json({
+        return res.status(401).json({
+            status: 401,
             message: 'Access denied. No token provided'
         });
     }
@@ -17,7 +18,8 @@ export const authMiddleware = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (err) {
-        res.status(401).json({
+        return res.status(403).json({
+            status: 403,
             message: 'Invalid or expired token'
         });
     }

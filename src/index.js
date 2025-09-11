@@ -20,10 +20,10 @@ app.use(cors());
 app.use('/', userRoutes);
 app.use('/', productRoutes);
 
-// Error handling middleware
+// Error handling 
 app.use(errorHandling);
 
-// Create database with tables before starting server
+// Run the query to create the user and product table before starting the server
 createTables();
 
 app.get('/', async (req, res) => {

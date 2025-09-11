@@ -11,7 +11,7 @@ export const createTables = async () => {
             lname VARCHAR(50) NOT NULL,
             username VARCHAR(50) UNIQUE NOT NULL,
             email VARCHAR(50) UNIQUE NOT NULL,
-            password VARCHAR(50) NOT NULL,
+            password VARCHAR(255) NOT NULL,
             created_at TIMESTAMP DEFAULT NOW()
         )
     `;
@@ -33,6 +33,7 @@ export const createTables = async () => {
             description TEXT,
             price NUMERIC(10, 2) NOT NULL,
             image VARCHAR(100) NOT NULL,
+            user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
             created_at TIMESTAMP DEFAULT NOW()
         )
     `;
