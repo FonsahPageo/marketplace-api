@@ -22,14 +22,14 @@ const handleResponse = (res, status, message, data = null) => {
 };
 
 export const createUser = async (req, res, next) => {
-    const { fname, lname, username, email, password } = req.body;
+    const { fname, lname, username, email, password, role } = req.body;
     try {
         const existingUser = await findUserByUsername(username);
         if (existingUser) {
             return handleResponse(res, 400, 'A user with that username already exists in the database');
         }
 
-        const newUser = await createUserService(fname, lname, username, email, password);
+        const newUser = await createUserService(fname, lname, username, email, password, role);
         const accessToken = generateAccessToken(newUser);
         const refreshToken = generateRefreshToken(newUser);
 

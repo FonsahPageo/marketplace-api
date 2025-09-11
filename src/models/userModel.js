@@ -1,26 +1,26 @@
 import pool from '../config/db.js';
 import bcrypt from 'bcrypt';
 
-export const createUserService = async (fname, lname, username, email, password) => {
+export const createUserService = async (fname, lname, username, email, password, role) => {
     const saltRounds = 10;
     const hasdhedPaswword = await bcrypt.hash(password, saltRounds);
     const result = await pool.query(
-        `INSERT INTO users (fname, lname, username, email, password) 
-        VALUES ($1, $2, $3, $4, $5) 
-        RETURNING id, fname, lname, username, email`,
-        [fname, lname, username, email, hasdhedPaswword]);
+        `INSERT INTO users (fname, lname, username, email, password, role) 
+        VALUES ($1, $2, $3, $4, $5, $6) 
+        RETURNING id, fname, lname, username, email, role`,
+        [fname, lname, username, email, hasdhedPaswword, role]);
     return result.rows[0];
 };
 
 export const getAllUsersService = async () => {
     const result = await pool.query(
-        'SELECT id, fname, lname, username, email FROM users');
+        'SELECT id, fname, lname, username, email, role FROM users');
     return result.rows;
 };
 
 export const findUserByUsername = async (username) => {
     const result = await pool.query(
-        `SELECT id, fname, lname, username, email, password
+        `SELECT id, fname, lname, username, email, password, role
         FROM users WHERE username=$1`,
         [username]);
     if (!result.rows[0]) return null;

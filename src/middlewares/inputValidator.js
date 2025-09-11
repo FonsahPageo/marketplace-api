@@ -13,6 +13,7 @@ export const userSchema = Joi.object({
         .messages({
             'string.pattern.base': 'Password must be 8-30 characters long and include at least one uppercase, lowercase, number and special character'
         }),
+    role: Joi.string().min(3),
 });
 
 export const productSchema = Joi.object({
