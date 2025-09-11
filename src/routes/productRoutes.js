@@ -7,10 +7,11 @@ import {
     deleteProduct
 } from '../controllers/productController.js';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
+import { validate, productSchema } from '../middlewares/inputValidator.js';
 
 const router = express.Router();
 
-router.post('/products', authMiddleware, createProduct);
+router.post('/products', validate(productSchema), authMiddleware, createProduct);
 router.delete('/products/:id', authMiddleware, deleteProduct);
 
 router.patch('/products/:id', authMiddleware, updateProduct);

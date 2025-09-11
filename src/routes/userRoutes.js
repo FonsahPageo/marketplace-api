@@ -8,11 +8,12 @@ import {
     refreshToken,
 } from '../controllers/userController.js';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
+import {validate, userSchema} from '../middlewares/inputValidator.js';
 
 const router = express.Router();
 
-router.post('/register', createUser);
-router.post('/login', authMiddleware, loginUser);
+router.post('/register', validate(userSchema), createUser);
+router.post('/login', validate, authMiddleware, loginUser);
 router.post('/refresh', authMiddleware, refreshToken);
 router.post('/logout', authMiddleware, logoutUser);
 
