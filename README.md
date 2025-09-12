@@ -114,4 +114,7 @@ DELETE /delete
 ![Delete Product](./screenshots/delete_product.png)
 
 ## Notes
-- When registering, an access token is generated. it will be used as bearer authorization when loggin in, creating, modifying or deleting products as well as to logout.
+- When logging in, an access token is generated. it will be used as bearer authorization for creating and managing products as well as to logout.
+- Products are associated with the ID of the user that created them, therefore can only be deleted by that user.
+- Only persons with role=admin can see or search users. But everyone can view products, create products, delete their own products
+
