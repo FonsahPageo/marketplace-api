@@ -50,13 +50,13 @@ A **Node.js + Express** REST API for user authentication and CRUD operations for
 ### Clone the repository 
 
 ```bash
-`git clone https://github.com/FonsahPageo/marketplace-api.git`
+git clone https://github.com/FonsahPageo/marketplace-api.git
 
-`cd marketplace-api`
+cd marketplace-api
 
-`npm install`
+npm install
 
-`mv .env.example .env` 
+mv .env.example .env
 
 npm run dev
 ```
@@ -66,6 +66,7 @@ npm run dev
 for instance
 
 `.env`
+```bash
 PORT=8000
 JWT_SECRET=supersecretkey
 REFRESH_SECRET=superrefreshsecretkey
@@ -73,6 +74,7 @@ DB_USER=user
 DB_HOST=host
 DB_DATABASE=database
 DB_PORTDB_PASSWORD=password
+```
 
 Open **Postman** or any API platform, create a new collection for the various endpoints, make requests to test the different API endpoints.
 
