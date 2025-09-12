@@ -3,12 +3,12 @@ import bcrypt from 'bcrypt';
 
 export const createUserService = async (fname, lname, username, email, password, role) => {
     const saltRounds = 10;
-    const hasdhedPaswword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
     const result = await pool.query(
         `INSERT INTO users (fname, lname, username, email, password, role) 
         VALUES ($1, $2, $3, $4, $5, $6) 
         RETURNING id, fname, lname, username, email, role`,
-        [fname, lname, username, email, hasdhedPaswword, role]);
+        [fname, lname, username, email, hashedPassword, role]);
     return result.rows[0];
 };
 
@@ -18,22 +18,17 @@ export const getAllUsersService = async () => {
     return result.rows;
 };
 
-export const findUserByUsername = async (username) => {
-    const result = await pool.query(
-        `SELECT id, fname, lname, username, email, password, role
-        FROM users WHERE username=$1`,
-        [username]);
-    if (!result.rows[0]) return null;
-
-    const user = result.rows[0];
-    return {
-        id: user.id,
-        fname: user.fname,
-        lname: user.lname,
-        username: user.username,
-        email: user.email,
-        passwordHash: user.password
-    };
+export const getUserByIdentity = async (identity) => {
+    const trimmed = identity.trim();
+    const query = `
+        SELECT *
+        FROM users 
+        WHERE LOWER(username) = LOWER($1) or LOWER(email) = LOWER($1)
+        LIMIT 1
+        `;
+    const result = await pool.query(query, [trimmed]);
+    console.log('DB Result', result.rows);
+    return result.rows[0] || null;
 };
 
 export const saveRefreshToken = async (userId, token) => {

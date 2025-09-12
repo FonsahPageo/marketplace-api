@@ -8,16 +8,20 @@ import {
     refreshToken,
 } from '../controllers/userController.js';
 import { authMiddleware, authorizeRole } from '../middlewares/authMiddleware.js';
-import {validate, userSchema} from '../middlewares/inputValidator.js';
+import {validate, registerSchema, loginSchema} from '../middlewares/inputValidator.js';
 
 const router = express.Router();
 
-router.post('/register', validate(userSchema), createUser);
-router.post('/login', authMiddleware, loginUser);
-router.post('/logout', authMiddleware, logoutUser);
-router.post('/refresh', authMiddleware, authorizeRole('admmin'), refreshToken);
+// Public routes
+router.post('/register', validate(registerSchema), createUser);
+router.post('/login', validate(loginSchema), loginUser, authMiddleware);
 
-router.get('/users', authMiddleware, getAllUsers);
-router.get('/users/:username', authMiddleware, authorizeRole('admin'), findUser);
+// Authenticated routes
+router.post('/logout', authMiddleware, logoutUser);
+
+// Admin-only routes
+router.post('/refresh', authMiddleware, authorizeRole('admin'), refreshToken);
+router.get('/users', authMiddleware, authorizeRole('admin'),getAllUsers);
+router.get('/users/:identity', authMiddleware, authorizeRole('admin'), findUser);
 
 export default router;

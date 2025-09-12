@@ -40,13 +40,8 @@ export const createTables = async () => {
     `;
     try {
         await pool.query(createUsersQuery);
-        console.log('Users table created successfully');
-
         await pool.query(createRefreshTokensQuery);
-        console.log('Refresh tokens table created successfully');
-
         await pool.query(createProductsQuery);
-        console.log('Products table created successfully');
     } catch (error) {
         console.log('Error creating tables', error);
     }

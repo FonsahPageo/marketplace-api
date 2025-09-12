@@ -15,7 +15,12 @@ export const authMiddleware = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
+        req.user = {
+            id: decoded.id,
+            username: decoded.username,
+            email: decoded.email,
+            role: decoded.role
+        };
         next();
     } catch (err) {
         return res.status(403).json({
@@ -27,12 +32,18 @@ export const authMiddleware = (req, res, next) => {
 
 export const authorizeRole = (role) => {
     return (req, res, next) => {
+        if (!req) {
+            return res.status(401).json({
+                status: 401,
+                message: 'Unauthrized: no user data'
+            });
+        }
         if (req.user.role !== role) {
             return res.status(403).json({
                 status: 403,
-                message: 'Forbidden: insufficient privileges'
+                message: 'Forbidden: Insuficient privileges',
             });
         }
         next();
-    };
+    }
 };

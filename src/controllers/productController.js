@@ -15,9 +15,17 @@ const handleResponse = (res, status, message, data = null) => {
 };
 
 export const createProduct = async (req, res, next) => {
-    const { title, description, price, image } = req.body;
-    const userId = req.user.id;
     try {
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return handleResponse(res, 400, 'Request body cannot be empty');
+        }
+
+        const { title, description, price, image } = req.body;
+        if (!title || !price || !image) {
+            handleResponse(res, 400, 'Please provide the title, price, image');
+        }
+
+        const userId = req.user.id;
         const newProduct = await createProductService(title, description, price, image, userId);
 
         handleResponse(res, 201, 'Product added successfully', {
@@ -69,11 +77,11 @@ export const updateProduct = async (req, res, next) => {
             handleResponse(res, 404, `Product ${req.body.title} does not exist`, existingProduct);
         }
 
-        if(existingProduct.user_id !== userId){
+        if (existingProduct.user_id !== userId) {
             handleResponse(res, 403, 'You are not allowed to modify this product', existingProduct);
         }
 
-        const updatedProduct = await updateProductService (id, updates, userId);
+        const updatedProduct = await updateProductService(id, updates, userId);
         handleResponse(res, 200, 'Product modified successfully', updatedProduct);
     } catch (err) {
         next(err);
@@ -91,11 +99,11 @@ export const deleteProduct = async (req, res, next) => {
             handleResponse(res, 404, `Product does not exist`, existingProduct);
         }
 
-        if(existingProduct.user_id !== userId){
+        if (existingProduct.user_id !== userId) {
             handleResponse(res, 403, 'You are not allowed to delete this product', existingProduct);
         }
 
-        const deletedProduct = await deleteProductService (id, userId);
+        const deletedProduct = await deleteProductService(id, userId);
         handleResponse(res, 202, 'Product deleted successfully', deletedProduct);
     } catch (err) {
         next(err);
