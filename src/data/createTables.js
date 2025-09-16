@@ -7,8 +7,8 @@ export const createTables = async () => {
     const createUsersQuery = `
         CREATE TABLE IF NOT EXISTS users(
             id SERIAL PRIMARY KEY,
-            fname VARCHAR(50) NOT NULL,
-            lname VARCHAR(50) NOT NULL,
+            firstName VARCHAR(50) NOT NULL,
+            lastName VARCHAR(50) NOT NULL,
             username VARCHAR(50) UNIQUE NOT NULL,
             email VARCHAR(50) UNIQUE NOT NULL,
             password VARCHAR(255) NOT NULL,
@@ -17,13 +17,21 @@ export const createTables = async () => {
         )
     `;
 
+    const createBlacklistTableQuery = `
+        CREATE TABLE IF NOT EXISTS blacklisted_tokens (
+            id SERIAL PRIMARY KEY,
+            token TEXT NOT NULL,
+            expires_at TIMESTAMP NOT NULL
+        )
+    `;
+
     const createRefreshTokensQuery = `
         CREATE TABLE IF NOT EXISTS refresh_tokens (
             id SERIAL PRIMARY KEY,
             user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
             token TEXT NOT NULL,
-            expires_at TIMESTAMP NOT NULL,
-            created_at TIMESTAMP DEFAULT NOW()
+            created_at TIMESTAMP DEFAULT NOW(),
+            expires_at TIMESTAMP NOT NULL
         )
     `;
 
@@ -40,6 +48,7 @@ export const createTables = async () => {
     `;
     try {
         await pool.query(createUsersQuery);
+        await pool.query(createBlacklistTableQuery);
         await pool.query(createRefreshTokensQuery);
         await pool.query(createProductsQuery);
     } catch (error) {

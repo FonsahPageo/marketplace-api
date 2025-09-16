@@ -1,8 +1,8 @@
 import Joi from 'joi';
 
 export const registerSchema = Joi.object({
-    fname: Joi.string().min(3).required(),
-    lname: Joi.string().min(3).required(),
+    firstName: Joi.string().min(3).required(),
+    lastName: Joi.string().min(3).required(),
     username: Joi.string().min(3).required(),
     email: Joi.string().email().required().messages({
         'string.email': 'Email must be a valid email of format username@domain.com',

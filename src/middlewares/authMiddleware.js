@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken';
+import { isTokenBlacklisted } from '../models/tokenModel.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-export const authMiddleware = (req, res, next) => {
+export const authMiddleware = async (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
@@ -14,6 +15,12 @@ export const authMiddleware = (req, res, next) => {
     }
 
     try {
+        if(await isTokenBlacklisted(token)){
+            return res.status(403).json({
+                message: 'Token revoked'
+            });
+        }
+
         const decoded = jwt.verify(token, JWT_SECRET);
         req.user = {
             id: decoded.id,

@@ -1,17 +1,20 @@
 import {
+    blacklistToken,
+    deleteRefreshToken,
+    validateRefreshToken,
+    saveRefreshToken,
+} from "../models/tokenModel.js";
+import {
     createUserService,
     getAllUsersService,
-    saveRefreshToken,
-    findRefreshToken,
-    deleteRefreshToken,
-    getUserByIdentity
+    getUserByIdentity,
 } from "../models/userModel.js";
 import {
     generateAccessToken,
     generateRefreshToken,
-    verifyRefreshToken
 } from "../utils/jwt.js";
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 const handleResponse = (res, status, message, data = {}) => {
     res.status(status).json({
@@ -27,14 +30,16 @@ const sanitizeUser = (user) => {
     return sanitized;
 };
 
+const REFRESH_SECRET = process.env.REFRESH_SECRET;
+
 export const createUser = async (req, res, next) => {
     try {
         if (!req.body || Object.keys(req.body).length === 0) {
             return handleResponse(res, 400, 'Request body cannot be empty');
         }
 
-        const { fname, lname, username, email, password, role } = req.body;
-        if (!fname || !lname || !username || !email || !password) {
+        const { firstName, lastName, username, email, password, role } = req.body;
+        if (!firstName || !lastName || !username || !email || !password) {
             return handleResponse(res, 400, 'Please provide the firstname, lastname, username, email, password');
         }
 
@@ -43,7 +48,7 @@ export const createUser = async (req, res, next) => {
             return handleResponse(res, 400, 'A user already exists with that username');
         }
 
-        const newUser = await createUserService(fname, lname, username, email, password, role);
+        const newUser = await createUserService(firstName, lastName, username, email, password, role);
         handleResponse(res, 201, 'User created successfully', {
             user: sanitizeUser(newUser),
         });
@@ -115,7 +120,12 @@ export const loginUser = async (req, res, next) => {
         const accessToken = generateAccessToken(user);
         const refreshToken = generateRefreshToken(user);
 
-        await saveRefreshToken(user.id, refreshToken);
+        const decoded = jwt.decode(refreshToken);
+        if (!decoded?.exp) {
+            return handleResponse(res, 500, 'Failed to generate refresh token expiration');
+        }
+
+        await saveRefreshToken(user.id, refreshToken, decoded.exp);
 
         handleResponse(res, 200, `Logged in as ${user.username}`, {
             user: sanitizeUser(user),
@@ -128,29 +138,56 @@ export const loginUser = async (req, res, next) => {
 };
 
 export const logoutUser = async (req, res, next) => {
-    const token = req.body?.token;
-    if (!token) return handleResponse(res, 400, 'Refresh token required');
-
     try {
-        await deleteRefreshToken(token);
-        handleResponse(res, 200, 'Logged out successfully');
+        const authHeader = req.headers['authorization'];
+        const accessToken = authHeader && authHeader.split(' ')[1];
+        const refreshToken = req.body?.refreshToken;
+
+        if (!accessToken) {
+            return handleResponse(res, 400, "Access token is required");
+        }
+
+        const decodedAccess = jwt.decode(accessToken);
+        if (decodedAccess?.exp) {
+            await blacklistToken(accessToken, decodedAccess.exp);
+        };
+
+        if (!refreshToken) {
+            return handleResponse(res, 400, "Refresh token is required");
+        } else {
+            await deleteRefreshToken(refreshToken);
+        }
+
+        return handleResponse(res, 200, 'Logged out successfully');
     } catch (err) {
-        next(err)
+        next(err);
     }
 };
 
-export const refreshToken = async (req, res, next) => {
+export const regenerateRefreshToken = async (req, res, next) => {
     const { token } = req.body;
-    if (!token) return handleResponse(res, 400, 'Refresh token required');
+    if (!token) return handleResponse(res, 401, 'Refresh token required');
 
     try {
-        const storedToken = await findRefreshToken(token);
-        if (!storedToken) return handleResponse(res, 403, 'Invalid refresh token');
+        const decoded = jwt.verify(token, REFRESH_SECRET);
+        const isValid = await validateRefreshToken(decoded.id, token);
 
-        const decoded = verifyRefreshToken(token);
-        const accessToken = generateAccessToken(decoded);
+        if (!isValid) {
+            return res.status(403).json({
+                message: 'Invalid or rotated token'
+            });
+        }
 
-        handleResponse(res, 200, 'Access token refreshed', { accessToken });
+        const newAccessToken = generateAccessToken(decoded);
+        const newRefreshToken = generateRefreshToken(decoded);
+
+        await deleteRefreshToken(decoded.id);
+        await saveRefreshToken(decoded.id, newRefreshToken, decoded.exp);
+
+        res.json({
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken
+        });
     } catch (err) {
         handleResponse(res, 403, 'Invalid or expired refresh token');
     }

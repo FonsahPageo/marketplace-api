@@ -5,7 +5,7 @@ import {
     logoutUser,
     getAllUsers, 
     findUser,
-    refreshToken,
+    regenerateRefreshToken,
 } from '../controllers/userController.js';
 import { authMiddleware, authorizeRole } from '../middlewares/authMiddleware.js';
 import {validate, registerSchema, loginSchema} from '../middlewares/inputValidator.js';
@@ -17,10 +17,10 @@ router.post('/register', validate(registerSchema), createUser);
 router.post('/login', validate(loginSchema), loginUser, authMiddleware);
 
 // Authenticated routes
-router.post('/logout', authMiddleware, logoutUser);
+router.post('/logout', logoutUser);
 
 // Admin-only routes
-router.post('/refresh', authMiddleware, authorizeRole('admin'), refreshToken);
+router.post('/refresh', authMiddleware, authorizeRole('admin'), regenerateRefreshToken);
 router.get('/users', authMiddleware, authorizeRole('admin'),getAllUsers);
 router.get('/users/:identity', authMiddleware, authorizeRole('admin'), findUser);
 

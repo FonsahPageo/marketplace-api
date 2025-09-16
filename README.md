@@ -35,7 +35,7 @@ A **Node.js + Express** REST API for user authentication and CRUD operations for
 
 ### Users table
 
-- Stores user information during registraion (fname, lname, username, email, password, role)
+- Stores user information during registraion (firstName, lastName, username, email, password, role)
 - Uses bcrypt to hash passwords before storing for security
 
 ### Product table
