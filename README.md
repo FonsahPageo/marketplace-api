@@ -23,6 +23,8 @@ A **Node.js + Express** REST API for user authentication and CRUD operations for
 - Input validation using **Joi**
 - Environment variable configuration with **dotenv**
 
+---
+
 ## Tech stack
 
 - **Backend:** Node.js, Express.js
@@ -60,6 +62,7 @@ src/
 |---utils/                    # Utility functions
 |    |---jwt.js               # JWT token utilities
 ```
+---
 
 ## Database structure
 
@@ -72,6 +75,17 @@ src/
 
 - Stores information about products created (title, description, price, image)
 - It is not a good practice to store images in the database, so it's better to host them elsewhere and reference with the URL, for instance Amazon S3. So the image url is rather stored as a string
+
+### Refresh tokens table
+
+- Stores the refresh token generated when the user is logged in.
+The refresh token works together with the access token to handle secure authentication and session managment.
+- Access tokens are short-lived and prove that the user is authenticated.
+- Refresh tokens are used to obtain new access tokens when the olf one expires.
+
+### Blacklisted tokens table
+
+- Stores refresh tokens that were blacklisted when the user logged out so that they cannot be reused if an attacker manages to get access to them.
 
 ---
 
@@ -108,6 +122,8 @@ DB_PORTDB_PASSWORD=password
 
 Open **Postman** or any API platform, create a new collection for the various endpoints, make requests to test the different API endpoints.
 
+---
+
 ## Testing
 
 The project includes a comprehensive test suite using Jest and Supertest.
@@ -125,7 +141,6 @@ npm run test:watch
 npm run test:coverage
 
 ```
-
 ### Test Structure
 ```
 tests/
@@ -157,6 +172,8 @@ Tests run against a dedicate test database setup with:
 - CRUD Operations: Product creation, reading, updating, deletion
 - Error Handling: Invalid input and edge cases
 - Database Isolation: Clean state for each test suite
+
+---
 
 ## API Documentation
 
