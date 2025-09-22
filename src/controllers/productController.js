@@ -2,6 +2,7 @@ import {
     createProductService,
     getAllProductsService,
     findProductById,
+    findProductByCategoryService,
     updateProductService,
     deleteProductService
 } from "../models/productModel.js";
@@ -20,17 +21,18 @@ export const createProduct = async (req, res, next) => {
             return handleResponse(res, 400, 'Request body cannot be empty');
         }
 
-        const { title, description, price, image } = req.body;
-        if (!title || !price || !image) {
-            handleResponse(res, 400, 'Please provide the title, price, image');
+        const { title, description, category, price, image } = req.body;
+        if (!title || !category || !price || !image) {
+            handleResponse(res, 400, 'Please provide the title, catgeory, price, image');
         }
 
         const userId = req.user.id;
-        const newProduct = await createProductService(title, description, price, image, userId);
+        const newProduct = await createProductService(title, description, category, price, image, userId);
 
         handleResponse(res, 201, 'Product added successfully', {
             title: title,
             description: description,
+            category: category,
             price: price,
             image: image
         });
@@ -61,6 +63,20 @@ export const findProduct = async (req, res, next) => {
             return handleResponse(res, 404, 'Product does not exist', product)
         }
         handleResponse(res, 202, `Product ${id} found`, product);
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const findProductByCategory = async (req, res, next) => {
+    try {
+        const { category } = req.params;
+        const product = await findProductByCategoryService(category);
+
+        if (!product) {
+            return handleResponse(res, 404, 'Product does not exist', product)
+        }
+        handleResponse(res, 202, `Product ${category} found`, product);
     } catch (err) {
         next(err);
     }

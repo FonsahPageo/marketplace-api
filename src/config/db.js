@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 const { Pool } = pkg;
 dotenv.config();
 
+const isTest = process.env.NODE_ENV === 'test';
+
 const pool = new Pool({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
@@ -13,7 +15,6 @@ const pool = new Pool({
 });
 
 pool.on('connect', () => {
-    // console.log('Connection pool established with database');
 });
 
 export default pool;

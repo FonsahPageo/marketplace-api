@@ -1,10 +1,10 @@
 import bcrypt from 'bcrypt';
 import pool from '../config/db.js';
 
-export const createProductService = async (title, description, price, image, userId) => {
+export const createProductService = async (title, description, category, price, image, userId) => {
     const result = await pool.query(
-        'INSERT INTO products (title, description, price, image, user_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-        [title, description, price, image, userId]);
+        'INSERT INTO products (title, description, category, price, image, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        [title, description, category, price, image, userId]);
     return result.rows[0];
 };
 
@@ -16,6 +16,11 @@ export const getAllProductsService = async () => {
 export const findProductById = async (id) => {
     const result = await pool.query('SELECT * FROM products WHERE id=$1', [id]);
     return result.rows[0];
+};
+
+export const findProductByCategoryService = async (category) => {
+    const result = await pool.query('SELECT * FROM products WHERE category=$1', [category]);
+    return result.rows;
 };
 
 export const updateProductService = async (id, fields, userId) => {

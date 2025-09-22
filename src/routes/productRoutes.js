@@ -4,7 +4,8 @@ import {
     getAllProducts,
     findProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    findProductByCategory
 } from '../controllers/productController.js';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
 import { validate, productSchema } from '../middlewares/inputValidator.js';
@@ -18,5 +19,6 @@ router.patch('/products/:id', authMiddleware, updateProduct);
 
 router.get('/products', getAllProducts);
 router.get('/products/:id', findProduct);
+router.get('/products/category/:category', findProductByCategory);
 
 export default router;

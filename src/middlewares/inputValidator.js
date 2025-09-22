@@ -44,6 +44,8 @@ export const productSchema = Joi.object({
     }),
     description: Joi.string().min(3).messages({
     }),
+    category: Joi.string().min(3).required().messages({
+    }),
     price: Joi.number().integer().min(3).required().messages({
         'any.required': 'Product price is required',
         'string.empty': 'Product price cannot be empty'

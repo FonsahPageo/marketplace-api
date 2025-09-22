@@ -40,6 +40,7 @@ export const createTables = async () => {
             id SERIAL PRIMARY KEY,
             title VARCHAR(50) NOT NULL,
             description TEXT,
+            category TEXT NOT NULL,
             price NUMERIC(10, 2) NOT NULL,
             image VARCHAR(100) NOT NULL,
             user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,

@@ -1,36 +1,10 @@
-import express from 'express';
-import cors from 'cors';
 import dotenv from 'dotenv';
-import pool from './config/db.js';
-import userRoutes from './routes/userRoutes.js';
-import productRoutes from './routes/productRoutes.js';
-import errorHandling from './middlewares/errorHandling.js';
-import { createTables } from './data/createTables.js';
+import app from './app.js';
 
 dotenv.config();
 
-const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middlewares
-app.use(express.json());
-app.use(cors());
-
-// Routes
-app.use('/', userRoutes);
-app.use('/', productRoutes);
-
-// Error handling 
-app.use(errorHandling);
-
-// Run the query to create the user and product table before starting the server
-createTables();
-
-app.get('/', async (req, res) => {
-    const currentDb = await pool.query('SELECT current_database()');
-    res.send(`Connected to ${currentDb.rows[0].current_database} database succesffuly`);
-})
-
 app.listen(PORT, () => {
-    console.log(`The server is running on http://localhost:${PORT}`);
-})
+  console.log(`The server is running on http://localhost:${PORT}`);
+});
