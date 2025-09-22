@@ -35,7 +35,7 @@ A **Node.js + Express** REST API for user authentication and CRUD operations for
 
 ## API Structure
 
-
+```
 src/
 |---app.js                    # Main Express app configuration
 |---index.js                  # Server entry point
@@ -59,6 +59,7 @@ src/
 |    |---errorHandling.js     # Error handling middleware
 |---utils/                    # Utility functions
 |    |---jwt.js               # JWT token utilities
+```
 
 ## Database structure
 
@@ -126,6 +127,7 @@ npm run test:coverage
 ```
 
 ### Test Structure
+```
 tests/
 |---unit/                        # unit tests for individual components
 |    |---jwt.test.js             # JWT utility tests
@@ -137,6 +139,7 @@ tests/
 |    |---users.test.js           # User API tests
 |    |---product.test.js         # Product API tests
 |---setup.js                     # Test database setup
+```
 
 ### Test Environment
 
