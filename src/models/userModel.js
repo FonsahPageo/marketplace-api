@@ -18,7 +18,7 @@ export const getAllUsersService = async () => {
     return result.rows;
 };
 
-export const getUserByIdentity = async (identity) => {
+export const getUserByIdentityService = async (identity) => {
     const trimmed = identity.trim();
     const query = `
         SELECT id, firstName, lastName, username, email, role, password, status
@@ -37,7 +37,8 @@ export const activateUserService = async (identity) => {
         SET status = 'active'
         WHERE LOWER(username) = LOWER($1) or LOWER(email) = LOWER($1) 
         `,
-        [trimmed]);
+        [trimmed]
+    );
     return result.rows[0] || null;
 };
 
@@ -48,7 +49,8 @@ export const deactivateUserService = async (identity) => {
         SET status = 'deactivated'
         WHERE LOWER(username) = LOWER($1) or LOWER(email) = LOWER($1) 
         `,
-        [trimmed]);
+        [trimmed]
+    );
     return result.rows[0] || null;
 };
 
@@ -58,5 +60,34 @@ export const deleteUserService = async (identity) => {
         DELETE FROM users 
         WHERE LOWER(username) = LOWER($1) or LOWER(email) = LOWER($1) 
         `,
-        [trimmed]);
+        [trimmed]
+    );
+};
+
+export const checkUserLoginService = async (identity) => {
+    const trimmed = identity.trim();
+    const result = await pool.query(`
+            SELECT 1
+            FROM users u
+            INNER JOIN refresh_tokens r  
+                ON u.id = r.user_id
+            WHERE (LOWER(u.username) = LOWER($1) or LOWER(u.email) = LOWER($1)) 
+                AND r.expires_at > NOW()
+            LIMIT 1
+        `,
+        [trimmed]
+    );
+    return result.rowCount > 0;
+};
+
+export const listLoggedInUsersService = async () => {
+    const result = await pool.query(`
+        SELECT DISTINCT
+            u.username
+        FROM users u
+        INNER JOIN refresh_tokens r
+            ON u.id = r.user_id
+        WHERE r.expires_at > NOW()
+    `);
+    return result.rows;
 };

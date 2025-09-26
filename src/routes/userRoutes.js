@@ -8,6 +8,8 @@ import {
     regenerateRefreshToken,
     deleteUser,
     deactivateUser,
+    listLoggedInUsers,
+    checkLoginStatus,
 } from '../controllers/userController.js';
 import { authMiddleware, authorizeRole } from '../middlewares/authMiddleware.js';
 import {validate, registerSchema, loginSchema} from '../middlewares/inputValidator.js';
@@ -22,6 +24,8 @@ router.post('/logout', logoutUser);
 // Admin-only routes
 router.post('/refresh', authMiddleware, authorizeRole('admin'), regenerateRefreshToken);
 router.get('/all-users', authMiddleware, authorizeRole('admin'),getAllUsers);
+router.get('/logged-in-users', authMiddleware, authorizeRole('admin'), listLoggedInUsers);
+router.get('/check-login-status/:identity', authMiddleware, authorizeRole('admin'), checkLoginStatus);
 router.get('/find-user/:identity', authMiddleware, authorizeRole('admin'), findUser);
 router.patch('/deactivate-user/:identity', authMiddleware, deactivateUser);
 router.delete('/delete-user/:identity', authMiddleware, authorizeRole('admin'), deleteUser);

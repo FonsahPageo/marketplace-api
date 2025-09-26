@@ -10,8 +10,10 @@ import {
     createUserService,
     deactivateUserService,
     deleteUserService,
+    listLoggedInUsersService,
     getAllUsersService,
-    getUserByIdentity,
+    getUserByIdentityService,
+    checkUserLoginService,
 } from '../models/userModel.js';
 import {
     generateAccessToken,
@@ -47,7 +49,7 @@ export const createUser = async (req, res, next) => {
             return handleResponse(res, 400, 'Please provide the firstname, lastname, username, email, password');
         }
 
-        const existingUser = await getUserByIdentity(username || email);
+        const existingUser = await getUserByIdentityService(username || email);
         if (existingUser) {
             return handleResponse(res, 400, 'A user already exists with that username');
         }
@@ -82,7 +84,7 @@ export const getAllUsers = async (req, res, next) => {
 export const findUser = async (req, res, next) => {
     try {
         const { identity } = req.params;
-        const user = await getUserByIdentity(identity);
+        const user = await getUserByIdentityService(identity);
 
         if (!user) {
             return handleResponse(res, 404, 'User not found');
@@ -111,7 +113,7 @@ export const loginUser = async (req, res, next) => {
             return handleResponse(res, 400, 'Please provide the password');
         }
 
-        const user = await getUserByIdentity(trimmedIdentity);
+        const user = await getUserByIdentityService(trimmedIdentity);
         if (!user) {
             return handleResponse(res, 401, 'Invalid username or email');
         }
@@ -155,7 +157,7 @@ export const logoutUser = async (req, res, next) => {
             return handleResponse(res, 400, 'Access token is required');
         }
 
-        if(await isTokenBlacklisted(accessToken)){
+        if (await isTokenBlacklisted(accessToken)) {
             return handleResponse(res, 400, 'User is already logged out')
         }
 
@@ -211,7 +213,7 @@ export const deactivateUser = async (req, res, next) => {
         const loggedInUserId = req.user.id;
         const loggedInUserRole = req.user.role;
 
-        const existingUser = await getUserByIdentity(identity);
+        const existingUser = await getUserByIdentityService(identity);
         if (!existingUser) {
             return handleResponse(res, 404, 'User not found');
         }
@@ -255,7 +257,7 @@ export const deleteUser = async (req, res, next) => {
         const loggedInUserId = req.user.id;
         const loggedInUserRole = req.user.role;
 
-        const existingUser = await getUserByIdentity(identity);
+        const existingUser = await getUserByIdentityService(identity);
         if (!existingUser) {
             return handleResponse(res, 404, 'User not found');
         }
@@ -268,5 +270,29 @@ export const deleteUser = async (req, res, next) => {
         return handleResponse(res, 200, 'User deleted successfully', deletedUser);
     } catch (err) {
         next(err);
+    }
+};
+
+export const checkLoginStatus = async (req, res, next) => {
+    try {
+        const { identity } = req.params;
+        const loggedIn = await checkUserLoginService(identity);
+
+        if(!loggedIn){
+            return handleResponse(res, 200, 'User is not logged in');
+        }
+
+        return handleResponse(res, 200, 'User is logged in');
+    } catch (err) {
+        next(err)
+    }
+};
+
+export const listLoggedInUsers = async (req, res, next) => {
+    try {
+        const loggedInUsers = await listLoggedInUsersService();
+        return handleResponse(res, 200, 'Users that are currently logged in', loggedInUsers)
+    } catch (err) {
+        next(err)
     }
 };
