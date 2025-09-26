@@ -107,7 +107,6 @@ export const updateProduct = async (req, res, next) => {
 export const deleteProduct = async (req, res, next) => {
     try {
         const { id } = req.params;
-        // const updates = req.body;
         const userId = req.user.id;
 
         const existingProduct = await findProductById(id);
@@ -120,7 +119,7 @@ export const deleteProduct = async (req, res, next) => {
         }
 
         const deletedProduct = await deleteProductService(id, userId);
-        handleResponse(res, 202, 'Product deleted successfully', deletedProduct);
+        handleResponse(res, 200, 'Product deleted successfully', deletedProduct);
     } catch (err) {
         next(err);
     }

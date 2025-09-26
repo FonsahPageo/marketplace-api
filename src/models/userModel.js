@@ -29,3 +29,12 @@ export const getUserByIdentity = async (identity) => {
     const result = await pool.query(query, [trimmed]);
     return result.rows[0] || null;
 };
+
+export const deleteUserService = async (identity) => {
+    const trimmed = identity.trim();
+    const result = await pool.query(`
+        DELETE FROM users 
+        WHERE LOWER(username) = LOWER($1) or LOWER(email) = LOWER($1) 
+        `,
+        [trimmed]);
+};

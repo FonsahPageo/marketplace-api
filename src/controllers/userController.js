@@ -6,6 +6,7 @@ import {
 } from "../models/tokenModel.js";
 import {
     createUserService,
+    deleteUserService,
     getAllUsersService,
     getUserByIdentity,
 } from "../models/userModel.js";
@@ -190,5 +191,27 @@ export const regenerateRefreshToken = async (req, res, next) => {
         });
     } catch (err) {
         handleResponse(res, 403, 'Invalid or expired refresh token');
+    }
+};
+
+export const deleteUser = async (req, res, next) => {
+    try {
+        const { identity } = req.params;
+        const loggedInUserId = req.user.id;
+        const loggedInUserRole = req.user.role;
+
+        const existingUser = await getUserByIdentity(identity);
+        if (!existingUser) {
+            return handleResponse(res, 404, 'User not found');
+        }
+
+        if ((existingUser.id !== loggedInUserId) && (loggedInUserRole !== 'admin')) {
+            return handleResponse(res, 403, 'You are not allowed to delete this user!');
+        }
+
+        const deletedUser = await deleteUserService(identity);
+        return handleResponse(res, 200, 'User deleted successfully', deletedUser);
+    } catch (err) {
+        next(err);
     }
 };

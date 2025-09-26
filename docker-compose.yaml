@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: marketplace_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pgpword
+      POSTGRES_DB: marketplace_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - marketplace_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+
+  app:
+    build: .
+    container_name: marketplace_api
+    command: npm run dev
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: development
+      DB_USER: postgres
+      DB_HOST: db
+      DB_DATABASE: marketplace_db
+      DB_PORT: 5432
+      DB_PASSWORD: pgpword
+      JWT_SECRET: jwtaccesstoken
+      REFRESH_SECRET: jwtrefreshtoken
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - marketplace_net
+
+volumes:
+  pgdata:
+
+networks:
+  marketplace_net:
