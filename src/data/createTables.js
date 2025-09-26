@@ -1,7 +1,27 @@
+import adminPool from '../config/adminDb.js';
 import pool from '../config/db.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
+
+export const createDatabase = async () => {
+    const dbName = process.env.DB_DATABASE;
+    try {
+        const result = await adminPool.query(
+            'SELECT 1 FROM pg_database WHERE datname = $1',
+            [dbName]
+        );
+
+        if (result.rowCount === 0){
+            await adminPool.query(`CREATE DATABASE "${dbName}"`);
+            console.log(`Database "${dbName}" created successfully`);
+        } else {
+            console.log(`Database "${dbName}" exists already`)
+        }
+    } catch (error) {
+        console.log('Error creating database', error);
+    }
+};
 
 export const createTables = async () => {
     const createUsersQuery = `
