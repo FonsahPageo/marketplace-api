@@ -267,7 +267,7 @@ export const deleteUser = async (req, res, next) => {
         }
 
         const deletedUser = await deleteUserService(identity);
-        return handleResponse(res, 200, 'User deleted successfully', deletedUser);
+        return handleResponse(res, 200, `User ${identity} deleted successfully`, deletedUser);
     } catch (err) {
         next(err);
     }
@@ -279,10 +279,10 @@ export const checkLoginStatus = async (req, res, next) => {
         const loggedIn = await checkUserLoginService(identity);
 
         if(!loggedIn){
-            return handleResponse(res, 200, 'User is not logged in');
+            return handleResponse(res, 200, `User ${identity} is not logged in`);
         }
 
-        return handleResponse(res, 200, 'User is logged in');
+        return handleResponse(res, 200, `User ${identity} is logged in`);
     } catch (err) {
         next(err)
     }
@@ -291,7 +291,7 @@ export const checkLoginStatus = async (req, res, next) => {
 export const listLoggedInUsers = async (req, res, next) => {
     try {
         const loggedInUsers = await listLoggedInUsersService();
-        return handleResponse(res, 200, 'Users that are currently logged in', loggedInUsers)
+        return handleResponse(res, 200, 'Users that are currently logged in:', loggedInUsers)
     } catch (err) {
         next(err)
     }
