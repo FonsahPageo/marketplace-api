@@ -1,26 +1,30 @@
 import pool from "../config/db.js";
 
 export const blacklistToken = async (token, exp) => {
+    const cleanToken = token.trim();
     await pool.query(`
             INSERT INTO blacklisted_tokens (token, expires_at)
             VALUES ($1, to_timestamp($2))
         `,
-        [token, exp]
+        [cleanToken, exp]
     );
 };
 
 export const isTokenBlacklisted = async (token) => {
+    const cleanToken = token.trim();
     const result = await pool.query(`
-            SELECT 1 FROM blacklisted_tokens WHERE token = $1 AND expires_at > NOW()
+            SELECT 1 FROM blacklisted_tokens 
+            WHERE token = $1 AND expires_at > NOW()
         `,
-        [token]
+        [cleanToken]
     );
     return result.rowCount > 0;
 };
 
 export const deleteExpiredBlacklistedTokens = async () => {
     await pool.query(`
-            DELETE FROM blacklisted_tokens WHERE expires_at < NOW()
+            DELETE FROM blacklisted_tokens 
+            WHERE expires_at < NOW()
         `);
 };
 

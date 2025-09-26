@@ -14,9 +14,7 @@ export const createDatabase = async () => {
 
         if (result.rowCount === 0){
             await adminPool.query(`CREATE DATABASE "${dbName}"`);
-            console.log(`Database "${dbName}" created successfully`);
         } else {
-            console.log(`Database "${dbName}" exists already`)
         }
     } catch (error) {
         console.log('Error creating database', error);
@@ -33,6 +31,7 @@ export const createTables = async () => {
             email VARCHAR(50) UNIQUE NOT NULL,
             password VARCHAR(255) NOT NULL,
             role VARCHAR(50),
+            status VARCHAR(50) DEFAULT 'active',
             created_at TIMESTAMP DEFAULT NOW()
         )
     `;

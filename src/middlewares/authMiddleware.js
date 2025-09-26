@@ -26,7 +26,8 @@ export const authMiddleware = async (req, res, next) => {
             id: decoded.id,
             username: decoded.username,
             email: decoded.email,
-            role: decoded.role
+            role: decoded.role,
+            status: decoded.status
         };
         next();
     } catch (err) {

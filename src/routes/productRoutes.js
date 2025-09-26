@@ -17,8 +17,8 @@ router.delete('/delete-product/:id', authMiddleware, deleteProduct);
 
 router.patch('/update-product/:id', authMiddleware, updateProduct);
 
-router.get('/all-products', getAllProducts);
-router.get('/find-product/:id', findProduct);
-router.get('/find-product/category/:category', findProductByCategory);
+router.get('/all-products', authMiddleware, getAllProducts);
+router.get('/find-product/:id', authMiddleware, findProduct);
+router.get('/find-product/category/:category', authMiddleware, findProductByCategory);
 
 export default router;

@@ -14,19 +14,41 @@ export const createUserService = async (firstName, lastName, username, email, pa
 
 export const getAllUsersService = async () => {
     const result = await pool.query(
-        'SELECT id, firstName, lastName, username, email, role FROM users');
+        'SELECT id, firstName, lastName, username, email, role, status FROM users');
     return result.rows;
 };
 
 export const getUserByIdentity = async (identity) => {
     const trimmed = identity.trim();
     const query = `
-        SELECT id, firstName, lastName, username, email, role, password
+        SELECT id, firstName, lastName, username, email, role, password, status
         FROM users 
         WHERE LOWER(username) = LOWER($1) or LOWER(email) = LOWER($1)
         LIMIT 1
         `;
     const result = await pool.query(query, [trimmed]);
+    return result.rows[0] || null;
+};
+
+export const activateUserService = async (identity) => {
+    const trimmed = identity.trim();
+    const result = await pool.query(`
+        UPDATE users 
+        SET status = 'active'
+        WHERE LOWER(username) = LOWER($1) or LOWER(email) = LOWER($1) 
+        `,
+        [trimmed]);
+    return result.rows[0] || null;
+};
+
+export const deactivateUserService = async (identity) => {
+    const trimmed = identity.trim();
+    const result = await pool.query(`
+        UPDATE users 
+        SET status = 'deactivated'
+        WHERE LOWER(username) = LOWER($1) or LOWER(email) = LOWER($1) 
+        `,
+        [trimmed]);
     return result.rows[0] || null;
 };
 

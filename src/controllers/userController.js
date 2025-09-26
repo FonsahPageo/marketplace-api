@@ -3,17 +3,20 @@ import {
     deleteRefreshToken,
     validateRefreshToken,
     saveRefreshToken,
-} from "../models/tokenModel.js";
+    isTokenBlacklisted,
+} from '../models/tokenModel.js';
 import {
+    activateUserService,
     createUserService,
+    deactivateUserService,
     deleteUserService,
     getAllUsersService,
     getUserByIdentity,
-} from "../models/userModel.js";
+} from '../models/userModel.js';
 import {
     generateAccessToken,
     generateRefreshToken,
-} from "../utils/jwt.js";
+} from '../utils/jwt.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
@@ -39,7 +42,7 @@ export const createUser = async (req, res, next) => {
             return handleResponse(res, 400, 'Request body cannot be empty');
         }
 
-        const { firstName, lastName, username, email, password, role } = req.body;
+        const { firstName, lastName, username, email, password, role, status } = req.body;
         if (!firstName || !lastName || !username || !email || !password) {
             return handleResponse(res, 400, 'Please provide the firstname, lastname, username, email, password');
         }
@@ -49,7 +52,7 @@ export const createUser = async (req, res, next) => {
             return handleResponse(res, 400, 'A user already exists with that username');
         }
 
-        const newUser = await createUserService(firstName, lastName, username, email, password, role);
+        const newUser = await createUserService(firstName, lastName, username, email, password, role, status);
         handleResponse(res, 201, 'User created successfully', {
             user: sanitizeUser(newUser),
         });
@@ -118,6 +121,10 @@ export const loginUser = async (req, res, next) => {
             return handleResponse(res, 401, 'Invalid password');
         }
 
+        if (user.status === 'deactivated') {
+            await activateUserService(identity);
+        }
+
         const accessToken = generateAccessToken(user);
         const refreshToken = generateRefreshToken(user);
 
@@ -145,7 +152,11 @@ export const logoutUser = async (req, res, next) => {
         const refreshToken = req.body?.refreshToken;
 
         if (!accessToken) {
-            return handleResponse(res, 400, "Access token is required");
+            return handleResponse(res, 400, 'Access token is required');
+        }
+
+        if(await isTokenBlacklisted(accessToken)){
+            return handleResponse(res, 400, 'User is already logged out')
         }
 
         const decodedAccess = jwt.decode(accessToken);
@@ -154,7 +165,7 @@ export const logoutUser = async (req, res, next) => {
         };
 
         if (!refreshToken) {
-            return handleResponse(res, 400, "Refresh token is required");
+            return handleResponse(res, 400, 'Refresh token is required');
         } else {
             await deleteRefreshToken(refreshToken);
         }
@@ -191,6 +202,50 @@ export const regenerateRefreshToken = async (req, res, next) => {
         });
     } catch (err) {
         handleResponse(res, 403, 'Invalid or expired refresh token');
+    }
+};
+
+export const deactivateUser = async (req, res, next) => {
+    try {
+        const { identity } = req.params;
+        const loggedInUserId = req.user.id;
+        const loggedInUserRole = req.user.role;
+
+        const existingUser = await getUserByIdentity(identity);
+        if (!existingUser) {
+            return handleResponse(res, 404, 'User not found');
+        }
+
+        if ((existingUser.id !== loggedInUserId) && (loggedInUserRole !== 'admin')) {
+            return handleResponse(res, 403, 'You are not allowed to deactivate this user!');
+        }
+
+        if (existingUser.status === 'deactivated') {
+            return handleResponse(res, 401, 'User is already deactivated');
+        }
+
+        const deactivatedUser = await deactivateUserService(identity);
+        if (existingUser.id === loggedInUserId) {
+            const authHeader = req.headers['Authorization'];
+            const accessToken = authHeader && authHeader.split(' ')[1];
+            const refreshToken = req.body?.refreshToken;
+
+            if (accessToken) {
+                const decodedAccess = jwt.decode(accessToken);
+                if (decodedAccess?.exp) {
+                    await blacklistToken(accessToken, decodedAccess.exp);
+                };
+            };
+
+            if (!refreshToken) {
+                return handleResponse(res, 400, 'Refresh token is required');
+            } else {
+                await deleteRefreshToken(refreshToken);
+            }
+        }
+        return handleResponse(res, 200, 'User deactivated and logged out successfully', deactivatedUser);
+    } catch (err) {
+        next(err);
     }
 };
 

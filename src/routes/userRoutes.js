@@ -7,6 +7,7 @@ import {
     findUser,
     regenerateRefreshToken,
     deleteUser,
+    deactivateUser,
 } from '../controllers/userController.js';
 import { authMiddleware, authorizeRole } from '../middlewares/authMiddleware.js';
 import {validate, registerSchema, loginSchema} from '../middlewares/inputValidator.js';
@@ -22,6 +23,7 @@ router.post('/logout', logoutUser);
 router.post('/refresh', authMiddleware, authorizeRole('admin'), regenerateRefreshToken);
 router.get('/all-users', authMiddleware, authorizeRole('admin'),getAllUsers);
 router.get('/find-user/:identity', authMiddleware, authorizeRole('admin'), findUser);
-router.delete('/delete-user/:identity', authMiddleware, deleteUser);
+router.patch('/deactivate-user/:identity', authMiddleware, deactivateUser);
+router.delete('/delete-user/:identity', authMiddleware, authorizeRole('admin'), deleteUser);
 
 export default router;
